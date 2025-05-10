@@ -7,14 +7,9 @@ load_dotenv()
 
 app = Flask(__name__)
 
-
-@app.route("/")
-def health_check():
-    return "OK"
-
-
 app.register_blueprint(gemini_bp)
 
 
-if __name__ == "__main__":
-    app.run(port=os.getenv("PORT"))
+@app.route("/")
+def home_view():
+    return render_template("index.html")
