@@ -6,12 +6,12 @@ const ChatPage: React.FC = () => {
   return (
     <div className="container mx-auto min-h-screen">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Tourist Guide Assistant</h1>
+        <h1 className="text-3xl font-bold mb-2">AI Tourist Guide Assistant</h1>
         <p className="text-muted-foreground">
-          Get real-time advice and information about attractions while you travel.
+          Get personalized advice and real-time information about attractions while you travel.
         </p>
       </div>
-      
+
       <div className="bg-card border border-border rounded-lg h-[600px] shadow-sm">
         <ChatInterface />
       </div>
