@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from routes import gemini_bp
+from .routes import gemini_bp
 from dotenv import load_dotenv
 import os
 

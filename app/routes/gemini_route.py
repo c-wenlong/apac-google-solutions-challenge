@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services import get_gemini_response
+from ..services import get_gemini_response
 
 
 gemini_bp = Blueprint("gemini", __name__)
