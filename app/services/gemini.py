@@ -55,7 +55,7 @@ def gemini_speech_to_text(audio_path: str) -> str:
     print("File size (bytes):", getattr(myfile, "size_bytes", "Unknown"))
     if not wait_for_file_active(client, file_name):
         raise Exception("File did not become ACTIVE in time.")
-    prompt = "Generate a transcript of the speech."
+    prompt = "Generate a transcript of the speech. Do not include any other text than the transcript."
     response = client.models.generate_content(
         model=DEFAULT_MODEL, contents=[prompt, myfile]
     )

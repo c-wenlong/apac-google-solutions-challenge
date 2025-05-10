@@ -32,6 +32,9 @@ const ChatInterface: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -190,6 +193,34 @@ const ChatInterface: React.FC = () => {
     }
   };
 
+  const fetchAndPlayAudio = async (text: string, messageId: string) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_APP_URL}/openai/text-to-speech`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      if (!response.ok) throw new Error('Failed to fetch audio');
+      const audioBlob = await response.blob();
+      const url = URL.createObjectURL(audioBlob);
+      setAudioUrl(url);
+      setPlayingMessageId(messageId);
+      setTimeout(() => {
+        audioRef.current?.play();
+      }, 100);
+    } catch (err) {
+      toast.error('Failed to play audio.');
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
+    };
+  }, [audioUrl]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleSend();
@@ -252,26 +283,39 @@ const ChatInterface: React.FC = () => {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'
-              }`}
+            className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <Card
               className={`max-w-[80%] p-3 ${message.sender === 'user'
                 ? 'bg-blue-600 text-white'
                 : 'bg-card border border-border'
-                }`}
+                } flex items-center`}
             >
-              {message.sender === 'assistant' ? (
-                <ReactMarkdown>{message.content}</ReactMarkdown>
-              ) : (
-                <p>{message.content}</p>
+              <div className="flex-1">
+                {message.sender === 'assistant' ? (
+                  <ReactMarkdown>{message.content}</ReactMarkdown>
+                ) : (
+                  <p>{message.content}</p>
+                )}
+                <p className="text-xs opacity-70 mt-1">
+                  {message.timestamp.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+              </div>
+              {/* Play button for assistant messages */}
+              {message.sender === 'assistant' && (
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="ml-2"
+                  onClick={() => fetchAndPlayAudio(message.content, message.id)}
+                >
+                  <Mic size={18} />
+                </Button>
               )}
-              <p className="text-xs opacity-70 mt-1">
-                {message.timestamp.toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </p>
             </Card>
           </div>
         ))}
@@ -317,6 +361,17 @@ const ChatInterface: React.FC = () => {
           </Button>
         </form>
       </div>
+      {audioUrl && (
+        <audio
+          ref={audioRef}
+          src={audioUrl}
+          autoPlay
+          onEnded={() => {
+            setAudioUrl(null);
+            setPlayingMessageId(null);
+          }}
+        />
+      )}
     </div>
   );
 };
