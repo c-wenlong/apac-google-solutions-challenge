@@ -37,7 +37,7 @@ def retrieve_places(raw_text: str):
     results = []
 
     for p in places.root:
-        livepopulartimes_updates = get_populartimes_by_formatted_address(p.place_name + " " + (p.address or ""))
+        livepopulartimes_updates = get_populartimes_by_formatted_address(f"({p.place_name})" + ", " + (p.address or ""))
         if livepopulartimes_updates:
             results.append({
                 **p.model_dump(),
