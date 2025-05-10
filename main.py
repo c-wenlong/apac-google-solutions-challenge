@@ -1,10 +1,16 @@
-from fastapi import FastAPI
-from routes.gemini_route import router as gemini_router
+from flask import Flask, render_template
+from routes import gemini_bp
 
-app = FastAPI()
-app.include_router(gemini_router)
+app = Flask(__name__)
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+@app.route("/")
+def health_check():
+    return "OK"
+
+
+app.register_blueprint(gemini_bp)
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8000)

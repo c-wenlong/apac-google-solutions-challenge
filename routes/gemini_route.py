@@ -1,10 +1,13 @@
-from fastapi import APIRouter, Request
+from flask import Blueprint, request, jsonify
+from services import get_gemini_response
 
-router = APIRouter()
 
-@router.post("/gemini")
-async def gemini_service(request: Request):
-    data = await request.json()
+gemini_bp = Blueprint("gemini", __name__)
+
+
+@gemini_bp.route("/gemini", methods=["POST"])
+def gemini():
+    data = request.get_json()
     prompt = data.get("prompt", "")
-    # Placeholder response
-    return {"response": f"Gemini placeholder response to: {prompt}"}
+    response = get_gemini_response(prompt)
+    return jsonify(response)
