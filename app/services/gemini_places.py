@@ -182,5 +182,19 @@ def get_place_current_crowd_data():
 
 def save_place_to_kb():
     data = get_place_current_crowd_data().get("places")
+    for place in data:
+        if place.get("current_density") is not None:
+            if place["current_density"] < 30:
+                crowd_level = "low"
+            elif place["current_density"] < 60:
+                crowd_level = "medium"
+            else:
+                crowd_level = "high"
+            place["current_crowd_level"] = crowd_level
+            del place["current_density"]
+        else:
+            place["current_crowd_level"] = None
+            del place["current_density"]
+        
     with open("public/place_crowd_data.json", "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
