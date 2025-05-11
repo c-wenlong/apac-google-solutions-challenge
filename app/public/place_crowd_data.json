@@ -1,0 +1,50 @@
+[
+  {
+    "place_name": "Formosa since 1968",
+    "address": "Ringvägen 110, 116 61 Stockholm, Sweden",
+    "current_density": null,
+    "current_time": "Sunday 21:00"
+  },
+  {
+    "place_name": "Frihamnstorget",
+    "address": "Frihamnstorget 8, 115 56 Stockholm, Sweden",
+    "current_density": 31,
+    "current_time": "Sunday 21:00"
+  },
+  {
+    "place_name": "No. 17 Palace 十七号院",
+    "address": "Döbelnsgatan 3, 111 40 Stockholm, Sweden",
+    "current_density": 0,
+    "current_time": "Sunday 21:00"
+  },
+  {
+    "place_name": "Rice",
+    "address": "Nybrogatan 16, 114 39 Stockholm, Sweden",
+    "current_density": 15,
+    "current_time": "Sunday 21:00"
+  },
+  {
+    "place_name": "Nara-De Koreansk &Japansk Sushi",
+    "address": "Luntmakargatan 70, 113 51 Stockholm, Sweden",
+    "current_density": 0,
+    "current_time": "Sunday 21:00"
+  },
+  {
+    "place_name": "STHLM Brunch Club",
+    "address": "Dalagatan 24, 113 24 Stockholm, Sweden",
+    "current_density": 0,
+    "current_time": "Sunday 21:00"
+  },
+  {
+    "place_name": "Meatballs for the People",
+    "address": "Nytorgsgatan 30, 116 40 Stockholm, Sweden",
+    "current_density": 29,
+    "current_time": "Sunday 21:00"
+  },
+  {
+    "place_name": "Rolfs Kök",
+    "address": "Tegnérgatan 41, 111 61 Stockholm, Sweden",
+    "current_density": 47,
+    "current_time": "Sunday 21:00"
+  }
+]

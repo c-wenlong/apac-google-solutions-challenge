@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw } from 'lucide-react';
-import { retrievePlaces, updatePlaces, getCurrentCrowdData } from '@/lib/api';
+import { retrievePlaces, updatePlaces, getCurrentCrowdData, updateKnowledgeBase } from '@/lib/api';
 
 const Index: React.FC = () => {
   const location = useLocation();
@@ -22,6 +22,7 @@ const Index: React.FC = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [listName, setListName] = useState('');
   const [showTutorial, setShowTutorial] = useState(true);
+  const [isUpdatingKB, setIsUpdatingKB] = useState(false);
 
   // Check if we're coming from a list
   useEffect(() => {
@@ -163,6 +164,18 @@ const Index: React.FC = () => {
     }
   };
 
+  const handleUpdateKnowledgeBase = async () => {
+    setIsUpdatingKB(true);
+    try {
+      await updateKnowledgeBase();
+      // Optionally show a success message or refresh data
+    } catch (error) {
+      console.error('Error updating knowledge base:', error);
+    } finally {
+      setIsUpdatingKB(false);
+    }
+  };
+
   return (
     <div className="container mx-auto min-h-screen">
       {places.length === 0 ? (
@@ -221,21 +234,36 @@ const Index: React.FC = () => {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
               <h1 className="text-3xl font-bold">Tourism Density Mapper</h1>
-              
-              <Button 
-                onClick={fetchCurrentCrowdData}
-                disabled={isLoading}
-                variant="outline"
-                size="sm"
-                className="flex gap-2 items-center"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="h-4 w-4" />
-                )}
-                Update Crowd Data
-              </Button>
+              <div className="flex gap-2 justify-end">
+                <Button 
+                  onClick={fetchCurrentCrowdData}
+                  disabled={isLoading}
+                  variant="outline"
+                  size="sm"
+                  className="flex gap-2 items-center"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  Update Crowd Data
+                </Button>
+                <Button
+                  onClick={handleUpdateKnowledgeBase}
+                  disabled={isUpdatingKB}
+                  variant="outline"
+                  size="sm"
+                  className="flex gap-2 items-center"
+                >
+                  {isUpdatingKB ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  Update Knowledge Base
+                </Button>
+              </div>
             </div>
             <p className="text-muted-foreground">
               Monitor and manage crowd density at popular tourist attractions.

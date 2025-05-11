@@ -78,4 +78,19 @@ export async function getCurrentCrowdData(): Promise<CurrentCrowdDataResponse> {
   }
 
   return await response.json();
+}
+
+export async function updateKnowledgeBase(): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/gemini/places/save-to-kb`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error: ${response.status}`);
+  }
+
+  return await response.json();
 } 

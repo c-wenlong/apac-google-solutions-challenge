@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from ..services import get_gemini_response, retrieve_places, gemini_speech_to_text, update_places, get_place_current_crowd_data
+from ..services import get_gemini_response, retrieve_places, gemini_speech_to_text, update_places, get_place_current_crowd_data, save_place_to_kb
 import tempfile
 import os
 import ffmpeg
@@ -57,4 +57,9 @@ def gemini_places_update():
 @gemini_bp.route("/gemini/places/current-crowd-data", methods=["GET"])
 def gemini_places_current_crowd_data():
     response = get_place_current_crowd_data()
+    return jsonify(response)
+
+@gemini_bp.route("/gemini/places/save-to-kb", methods=["POST"])
+def gemini_places_save_to_kb():
+    response = save_place_to_kb()
     return jsonify(response)
