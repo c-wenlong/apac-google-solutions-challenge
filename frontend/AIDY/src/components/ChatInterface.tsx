@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Mic, Send, MicOff } from 'lucide-react';
+import { Mic, Send, MicOff, Volume2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { toast } from "@/components/ui/sonner";
 import ReactMarkdown from 'react-markdown';
@@ -9,17 +9,25 @@ import ReactMarkdown from 'react-markdown';
 interface Message {
   id: string;
   content: string;
-  sender: 'user' | 'assistant';
+  sender: 'user' | 'assistant' | 'system';
   timestamp: Date;
 }
 
 console.log(import.meta.env.VITE_APP_URL);
 
+const systemPrompt = `You are Aidy, a friendly and knowledgeable AI travel assistant dedicated to helping users with any travel-related question or planning task—from suggesting destinations and attractions to offering practical advice on transportation, accommodations, visas, budgets, and local customs; you'll ask for key details like destination, dates, and interests, offer clear and concise recommendations and itineraries, ask follow-up questions to clarify missing information, and when unsure, acknowledge your limits and suggest official resources, all while maintaining a warm, conversational, and helpful tone.`;
+
 const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
+      id: '0',
+      content: systemPrompt,
+      sender: 'system',
+      timestamp: new Date()
+    },
+    {
       id: '1',
-      content: `Hello! I'm your tourist guide assistant. How can I help you today? ${import.meta.env.VITE_APP_URL}`,
+      content: `Hello! I'm your tourist guide assistant. How can I help you today?`,
       sender: 'assistant',
       timestamp: new Date()
     }
@@ -71,7 +79,7 @@ const ChatInterface: React.FC = () => {
           prompt: userMessage,
           // Include chat history for context
           context: messages
-            .map(msg => `${msg.sender === 'user' ? 'user' : 'assistant'}: ${msg.content}`)
+            .map(msg => `${msg.sender === 'user' ? 'user' : msg.sender === 'assistant' ? 'assistant' : 'system'}: ${msg.content}`)
             .join('\n')
         }),
       });
@@ -280,7 +288,7 @@ const ChatInterface: React.FC = () => {
         </div>
       )}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
+        {messages.filter(msg => msg.sender !== 'system').map((message) => (
           <div
             key={message.id}
             className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -288,12 +296,16 @@ const ChatInterface: React.FC = () => {
             <Card
               className={`max-w-[80%] p-3 ${message.sender === 'user'
                 ? 'bg-blue-600 text-white'
-                : 'bg-card border border-border'
+                : message.sender === 'assistant'
+                  ? 'bg-card border border-border'
+                  : 'bg-system text-white'
                 } flex items-center`}
             >
               <div className="flex-1">
                 {message.sender === 'assistant' ? (
                   <ReactMarkdown>{message.content}</ReactMarkdown>
+                ) : message.sender === 'system' ? (
+                  <p>{message.content}</p>
                 ) : (
                   <p>{message.content}</p>
                 )}
@@ -310,10 +322,10 @@ const ChatInterface: React.FC = () => {
                   type="button"
                   size="icon"
                   variant="ghost"
-                  className="ml-2"
+                  className={`ml-2 ${playingMessageId === message.id ? 'animate-pulse text-blue-500' : ''}`}
                   onClick={() => fetchAndPlayAudio(message.content, message.id)}
                 >
-                  <Mic size={18} />
+                  <Volume2 size={18} />
                 </Button>
               )}
             </Card>
