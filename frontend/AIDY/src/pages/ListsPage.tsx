@@ -1,9 +1,9 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import { Map, Trash2 } from 'lucide-react';
+import testJsonData from '../../../../app/test.json';
 
 interface TourismList {
   id: string;
@@ -14,26 +14,53 @@ interface TourismList {
 
 const ListsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [lists, setLists] = useState<TourismList[]>([
-    {
-      id: '1',
-      name: 'asd',
-      placesCount: 3,
-      lastUpdated: '2025-05-09'
-    },
-    {
-      id: '2',
-      name: 'London Landmarks',
-      placesCount: 5,
-      lastUpdated: '2025-05-08'
-    },
-    {
-      id: '3',
-      name: 'Tokyo Destinations',
-      placesCount: 7,
-      lastUpdated: '2025-05-07'
+  
+  // Declare state variables outside conditionals
+  const [lists, setLists] = useState<TourismList[]>([]);
+  
+  // Use useEffect to set the initial state conditionally
+  useEffect(() => {
+    if (testJsonData) {
+      const newName = "Stockholm";
+      const lastUpdated = "2025-05-12";
+      
+      setLists([
+        {
+          id: '1',
+          name: 'London Landmarks',
+          placesCount: 5,
+          lastUpdated: '2025-05-08'
+        },
+        {
+          id: '2',
+          name: 'Tokyo Destinations',
+          placesCount: 7,
+          lastUpdated: '2025-05-07'
+        },
+        // {
+        //   id: '3',
+        //   name: newName,
+        //   placesCount: 7,
+        //   lastUpdated: lastUpdated
+        // }
+      ]);
+    } else {
+      setLists([
+        {
+          id: '1',
+          name: 'London Landmarks',
+          placesCount: 5,
+          lastUpdated: '2025-05-08'
+        },
+        {
+          id: '2',
+          name: 'Tokyo Destinations',
+          placesCount: 7,
+          lastUpdated: '2025-05-07'
+        }
+      ]);
     }
-  ]);
+  }, []);
   
   const handleDeleteList = (id: string) => {
     setLists(lists.filter(list => list.id !== id));

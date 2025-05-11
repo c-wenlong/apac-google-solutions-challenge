@@ -61,7 +61,7 @@ def retrieve_places(raw_text: str):
     with open("test.json", "w", encoding="utf-8") as f:
         json.dump(json_data, f, ensure_ascii=False, indent=2)
         print("Results saved to test.json")
-
+    return json_data
 
 # ---------- 3.  Example run ---------- #
 # if __name__ == "__main__":

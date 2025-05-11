@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import EmptyState from '@/components/EmptyState';
@@ -11,6 +10,9 @@ import { toast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Loader2, RefreshCw } from 'lucide-react';
+import { retrievePlaces, updatePlaces, getCurrentCrowdData } from '@/lib/api';
 
 const Index: React.FC = () => {
   const location = useLocation();
@@ -28,48 +30,6 @@ const Index: React.FC = () => {
       setShowTutorial(false);
       setShowSearch(false);
       
-      // If the list name is "asd", load the example places
-      if (location.state.listName === "asd") {
-        const asdListPlaces = [
-          { 
-            id: '1', 
-            name: 'Eiffel Tower', 
-            location: 'Paris, France', 
-            lat: 48.8584, 
-            long: 2.2945, 
-            densityScore: 85,
-            address: '7th arrondissement',
-            city: 'Paris',
-            province: 'Île-de-France',
-            country: 'France'
-          },
-          { 
-            id: '2', 
-            name: 'Louvre Museum', 
-            location: 'Paris, France', 
-            lat: 48.8606, 
-            long: 2.3376, 
-            densityScore: 72,
-            address: 'Rue de Rivoli',
-            city: 'Paris',
-            province: 'Île-de-France',
-            country: 'France'
-          },
-          { 
-            id: '3', 
-            name: 'Notre-Dame Cathedral', 
-            location: 'Paris, France', 
-            lat: 48.8530, 
-            long: 2.3499, 
-            densityScore: 45,
-            address: '6 Parvis Notre-Dame',
-            city: 'Paris',
-            province: 'Île-de-France',
-            country: 'France'
-          }
-        ];
-        setPlaces(asdListPlaces);
-      }
     }
   }, [location.state]);
 
@@ -91,56 +51,22 @@ const Index: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // In a real application, this would be your API call
-      // Simulating API delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Call the backend API to retrieve places
+      const response = await retrievePlaces(query);
+      console.log(response)
+      // Transform the API response to match our UI's expected format
+      // The PlacesList component expects objects with place_name, address, current_density, and current_time
+      const placesData = response.results.map((place, index) => ({
+        place_name: place.place_name,
+        address: place.address || '',
+        current_density: place.current_density || 0,
+        current_time: place.current_time || new Date().toLocaleString()
+      }));
       
-      // Mock data that would come from your backend
-      const mockApiResponse = {
-        places: [
-          { 
-            id: '1', 
-            name: 'Eiffel Tower', 
-            location: 'Paris, France', 
-            lat: 48.8584, 
-            long: 2.2945, 
-            densityScore: 85,
-            address: '7th arrondissement',
-            city: 'Paris',
-            province: 'Île-de-France',
-            country: 'France'
-          },
-          { 
-            id: '2', 
-            name: 'Louvre Museum', 
-            location: 'Paris, France', 
-            lat: 48.8606, 
-            long: 2.3376, 
-            densityScore: 72,
-            address: 'Rue de Rivoli',
-            city: 'Paris',
-            province: 'Île-de-France',
-            country: 'France'
-          },
-          { 
-            id: '3', 
-            name: 'Notre-Dame Cathedral', 
-            location: 'Paris, France', 
-            lat: 48.8530, 
-            long: 2.3499, 
-            densityScore: 45,
-            address: '6 Parvis Notre-Dame',
-            city: 'Paris',
-            province: 'Île-de-France',
-            country: 'France'
-          }
-        ]
-      };
-      
-      setPlaces(mockApiResponse.places);
+      setPlaces(placesData);
       toast({
         title: `${listName} places loaded successfully`,
-        description: `Found ${mockApiResponse.places.length} locations`,
+        description: `Found ${placesData.length} locations`,
       });
       
     } catch (error) {
@@ -155,22 +81,47 @@ const Index: React.FC = () => {
     }
   };
 
-  const handleAddPlace = (newPlace: Omit<Place, 'id'>) => {
-    const placeWithId = {
-      ...newPlace,
-      id: Date.now().toString(),
-    };
-    
-    setPlaces(prevPlaces => [...prevPlaces, placeWithId]);
-    toast({
-      title: "Place added",
-      description: `${newPlace.place_name} has been added to your list.`,
-    });
-    setActiveTab("places");
+  const handleAddPlace = async (newPlace: Omit<Place, 'id'>) => { // Make it async
+    setIsLoading(true);
+    try {
+      // Construct the query string for the backend.
+      // AddPlaceForm currently sends newPlace.address as '' if not entered.
+      const query = newPlace.address && newPlace.address.trim() !== ''
+        ? `${newPlace.place_name} ${newPlace.address}`
+        : newPlace.place_name;
+
+      // Call the backend API to update/add the place
+      await updatePlaces(query); // This sends the place to be added to test.json via backend
+
+      // Show a success toast for adding the specific place
+      toast({
+        title: "Place Submitted",
+        description: `${newPlace.place_name} has been submitted to be added to the list. Refreshing data...`,
+      });
+
+      // Refresh the entire list from the backend to get the updated data
+      // fetchCurrentCrowdData already sets isLoading to false in its finally block,
+      // updates the 'places' state, and shows its own toast.
+      await fetchCurrentCrowdData();
+      
+      setActiveTab("places");
+
+    } catch (error) {
+      console.error('Error adding place:', error);
+      toast({
+        title: "Error Adding Place",
+        description: `There was a problem adding ${newPlace.place_name}. Please try again.`,
+        variant: "destructive",
+      });
+      setIsLoading(false); // Ensure loading is false on error if fetchCurrentCrowdData isn't called
+    }
+    // No need for a finally block here to set isLoading to false,
+    // as fetchCurrentCrowdData will handle it if successful,
+    // and the catch block handles it on error.
   };
 
   const handleDeletePlace = (id: string) => {
-    setPlaces(prevPlaces => prevPlaces.filter(place => place.id !== id));
+    setPlaces(prevPlaces => prevPlaces.filter(place => place.place_name !== id));
     toast({
       title: "Place removed",
       description: "The location has been removed from your list",
@@ -180,6 +131,36 @@ const Index: React.FC = () => {
   const handleStartMapping = () => {
     setShowTutorial(false);
     setShowSearch(true);
+  };
+
+  const fetchCurrentCrowdData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getCurrentCrowdData();
+      
+      // Convert to the format expected by PlacesList
+      const placesData = response.places.map(place => ({
+        place_name: place.place_name,
+        address: place.address,
+        current_density: place.current_density || 0,
+        current_time: place.current_time
+      }));
+      
+      setPlaces(placesData);
+      toast({
+        title: "Current crowd data loaded",
+        description: `Retrieved data for ${placesData.length} locations`,
+      });
+    } catch (error) {
+      console.error('Error fetching crowd data:', error);
+      toast({
+        title: "Error loading crowd data",
+        description: "There was a problem retrieving the current crowd data.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -238,7 +219,24 @@ const Index: React.FC = () => {
       ) : (
         <>
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Tourism Density Mapper</h1>
+            <div className="flex justify-between items-center mb-2">
+              <h1 className="text-3xl font-bold">Tourism Density Mapper</h1>
+              
+              <Button 
+                onClick={fetchCurrentCrowdData}
+                disabled={isLoading}
+                variant="outline"
+                size="sm"
+                className="flex gap-2 items-center"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
+                Update Crowd Data
+              </Button>
+            </div>
             <p className="text-muted-foreground">
               Monitor and manage crowd density at popular tourist attractions.
             </p>

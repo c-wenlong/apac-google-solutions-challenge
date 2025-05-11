@@ -38,3 +38,23 @@ def gemini_speech():
     finally:
         os.remove(webm_path)
         os.remove(wav_path)
+
+@gemini_bp.route("/gemini/places", methods=["POST"])
+def gemini_places():
+    text = request.get_json()
+    query = text.get("query", "")
+    response = retrieve_places(query)
+    return jsonify(response)
+
+@gemini_bp.route("/gemini/places/update", methods=["POST"])
+def gemini_places_update():
+    text = request.get_json()
+    query = text.get("query", "")
+    print(query)
+    response = update_places(query)
+    return jsonify(response)
+
+@gemini_bp.route("/gemini/places/current-crowd-data", methods=["GET"])
+def gemini_places_current_crowd_data():
+    response = get_place_current_crowd_data()
+    return jsonify(response)
