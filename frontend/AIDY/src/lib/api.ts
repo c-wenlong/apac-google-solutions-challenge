@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_APP_URL;
+const API_BASE_URL = import.meta.env.APP_URL;
 
 // Types for places API
 export interface CrowdData {
