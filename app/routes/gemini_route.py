@@ -1,8 +1,16 @@
-from flask import Blueprint, request, jsonify
-from ..services import get_gemini_response, retrieve_places, gemini_speech_to_text, update_places, get_place_current_crowd_data, save_place_to_kb
+from flask import Blueprint, request, jsonify, send_file
+from ..services import (
+    get_gemini_response,
+    retrieve_places,
+    gemini_speech_to_text,
+    update_places,
+    get_place_current_crowd_data,
+    save_place_to_kb,
+)
 import tempfile
 import os
 import ffmpeg
+import json
 
 gemini_bp = Blueprint("gemini", __name__)
 
@@ -12,23 +20,21 @@ def gemini_text():
     data = request.get_json()
     prompt = data.get("prompt", "")
     context = data.get("context", "")
-    print(prompt)
-    print(context)
     response = get_gemini_response(prompt, context)
     return jsonify(response)
 
 
 @gemini_bp.route("/gemini/speech-to-text", methods=["POST"])
 def gemini_speech():
-    if 'audio' not in request.files:
+    if "audio" not in request.files:
         return jsonify({"error": "No audio file provided."}), 400
-    audio_file = request.files['audio']
+    audio_file = request.files["audio"]
     # Save to a temporary webm file
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.webm') as tmp_webm:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as tmp_webm:
         audio_file.save(tmp_webm)
         webm_path = tmp_webm.name
     # Prepare a temporary wav file path
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_wav:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_wav:
         wav_path = tmp_wav.name
     try:
         # Convert webm to wav using ffmpeg
@@ -39,12 +45,14 @@ def gemini_speech():
         os.remove(webm_path)
         os.remove(wav_path)
 
+
 @gemini_bp.route("/gemini/places", methods=["POST"])
 def gemini_places():
     text = request.get_json()
     query = text.get("query", "")
     response = retrieve_places(query)
     return jsonify(response)
+
 
 @gemini_bp.route("/gemini/places/update", methods=["POST"])
 def gemini_places_update():
@@ -54,12 +62,27 @@ def gemini_places_update():
     response = update_places(query)
     return jsonify(response)
 
+
 @gemini_bp.route("/gemini/places/current-crowd-data", methods=["GET"])
 def gemini_places_current_crowd_data():
     response = get_place_current_crowd_data()
     return jsonify(response)
 
+
 @gemini_bp.route("/gemini/places/save-to-kb", methods=["POST"])
 def gemini_places_save_to_kb():
     response = save_place_to_kb()
     return jsonify(response)
+
+
+@gemini_bp.route("/gemini/places/crowd-levels", methods=["GET"])
+def gemini_places_crowd_levels():
+    json_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "public", "place_crowd_data.json"
+    )
+    print(json_path)
+    if not os.path.exists(json_path):
+        return jsonify({"error": "place_crowd_data.json not found"}), 404
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.loads(f.read())
+    return jsonify(data)

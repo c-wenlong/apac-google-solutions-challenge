@@ -14,6 +14,7 @@ SMART_MODEL = "gemini-2.5-pro-preview-05-06"
 def get_gemini_response(prompt: str, context: str = "") -> dict:
     client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
     contents = []
+    system_instruction = ""
     for line in context.splitlines():
         if not line.strip():
             continue
@@ -23,9 +24,18 @@ def get_gemini_response(prompt: str, context: str = "") -> dict:
         elif line.startswith("assistant: "):
             text = line[len("assistant: ") :]
             contents.append(types.Content(role="model", parts=[types.Part(text=text)]))
+        elif line.startswith("system: "):
+            text = line[len("system: ") :]
+            system_instruction += text
     # Add the latest user prompt
     contents.append(types.Content(role="user", parts=[types.Part(text=prompt)]))
-    response = client.models.generate_content(model=DEFAULT_MODEL, contents=contents)
+    print("system_instruction: ", system_instruction)
+    print(contents)
+    response = client.models.generate_content(
+        config=types.GenerateContentConfig(system_instruction=system_instruction),
+        model=DEFAULT_MODEL,
+        contents=contents,
+    )
     return {"response": response.text}
 
 

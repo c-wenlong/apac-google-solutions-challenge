@@ -1,5 +1,4 @@
-// API base URL - adjust as needed based on your backend setup
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_APP_URL;
 
 // Types for places API
 export interface CrowdData {
@@ -33,9 +32,9 @@ export interface CurrentCrowdDataResponse {
 // Function to retrieve places from text
 export async function retrievePlaces(query: string): Promise<PlacesResponse> {
   const response = await fetch(`${API_BASE_URL}/gemini/places`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ query }),
   });
@@ -50,9 +49,9 @@ export async function retrievePlaces(query: string): Promise<PlacesResponse> {
 // Function to update places database
 export async function updatePlaces(query: string): Promise<PlacesResponse> {
   const response = await fetch(`${API_BASE_URL}/gemini/places/update`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ query }),
   });
@@ -66,12 +65,15 @@ export async function updatePlaces(query: string): Promise<PlacesResponse> {
 
 // Function to get current crowd data
 export async function getCurrentCrowdData(): Promise<CurrentCrowdDataResponse> {
-  const response = await fetch(`${API_BASE_URL}/gemini/places/current-crowd-data`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  const response = await fetch(
+    `${API_BASE_URL}/gemini/places/current-crowd-data`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
   if (!response.ok) {
     throw new Error(`Error: ${response.status}`);
@@ -82,9 +84,9 @@ export async function getCurrentCrowdData(): Promise<CurrentCrowdDataResponse> {
 
 export async function updateKnowledgeBase(): Promise<any> {
   const response = await fetch(`${API_BASE_URL}/gemini/places/save-to-kb`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 
@@ -93,4 +95,4 @@ export async function updateKnowledgeBase(): Promise<any> {
   }
 
   return await response.json();
-} 
+}

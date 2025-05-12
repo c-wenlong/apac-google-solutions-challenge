@@ -5,6 +5,7 @@ import { Mic, Send, MicOff, Volume2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { toast } from "@/components/ui/sonner";
 import ReactMarkdown from 'react-markdown';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface Message {
   id: string;
@@ -18,6 +19,8 @@ console.log(import.meta.env.VITE_APP_URL);
 const systemPrompt = `You are Aidy, a friendly and knowledgeable AI travel assistant dedicated to helping users with any travel-related question or planning task—from suggesting destinations and attractions to offering practical advice on transportation, accommodations, visas, budgets, and local customs; you'll ask for key details like destination, dates, and interests, offer clear and concise recommendations and itineraries, ask follow-up questions to clarify missing information, and when unsure, acknowledge your limits and suggest official resources, all while maintaining a warm, conversational, and helpful tone.`;
 
 const ChatInterface: React.FC = () => {
+  const [mode, setMode] = useState<'discovery' | 'companion'>('discovery');
+  const [crowdDataPrompt, setCrowdDataPrompt] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '0',
@@ -66,31 +69,45 @@ const ChatInterface: React.FC = () => {
     return () => clearInterval(interval);
   }, [isConverting]);
 
+  // Fetch crowd data when switching to companion mode
+  useEffect(() => {
+    if (mode === 'companion' && !crowdDataPrompt) {
+      fetch(`${import.meta.env.VITE_APP_URL}/gemini/places/crowd-levels`)
+        .then(res => res.json())
+        .then(data => {
+          setCrowdDataPrompt(
+            `Here are the places the user has bookmarked for the trip, along with the current crowd level data: ${JSON.stringify(data)}`
+          );
+        })
+        .catch(() => setCrowdDataPrompt(null));
+    }
+  }, [mode, crowdDataPrompt]);
+
   const fetchAIResponse = async (userMessage: string) => {
     setIsLoading(true);
-
     try {
+      let contextMsgs = messages
+        .map(msg => `${msg.sender === 'user' ? 'user' : msg.sender === 'assistant' ? 'assistant' : 'system'}: ${msg.content}`)
+        .join('\n');
+      const prompt = userMessage;
+      if (mode === 'companion' && crowdDataPrompt) {
+        contextMsgs = `system: ${crowdDataPrompt}\n` + contextMsgs;
+      }
       const response = await fetch(`${import.meta.env.VITE_APP_URL}/gemini/text-to-text`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: userMessage,
-          // Include chat history for context
-          context: messages
-            .map(msg => `${msg.sender === 'user' ? 'user' : msg.sender === 'assistant' ? 'assistant' : 'system'}: ${msg.content}`)
-            .join('\n')
+          prompt,
+          context: contextMsgs
         }),
       });
-
       if (!response.ok) {
         throw new Error('Failed to get AI response');
       }
-
       const data = await response.json();
       return data.response || "I'm sorry, I couldn't process that request right now.";
-
     } catch (error) {
       console.error('Error fetching AI response:', error);
       toast.error("Failed to connect to AI service.");
@@ -266,6 +283,13 @@ const ChatInterface: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full relative">
+      {/* Mode Toggle */}
+      <div className="flex justify-center items-center py-2 border-b border-border bg-background sticky top-0 z-10">
+        <ToggleGroup type="single" value={mode} onValueChange={val => val && setMode(val as 'discovery' | 'companion')}>
+          <ToggleGroupItem value="discovery">Discovery</ToggleGroupItem>
+          <ToggleGroupItem value="companion">Companion</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
       {/* Recording Overlay */}
       {isRecording && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-70">
