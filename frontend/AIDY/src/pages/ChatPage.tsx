@@ -13,6 +13,10 @@ const ChatPage: React.FC = () => {
       <div className="bg-card border border-border rounded-lg h-[600px] shadow-sm">
         <ChatInterface />
       </div>
+      <p className="text-xs text-center text-muted-foreground mt-8">
+        Speech processing features are unavailable in the hosted version due to server environment restrictions on FFmpeg installation.<br />
+        You can clone the GitHub repo and run the backend locally with FFmpeg installed to enable these features.
+      </p>
     </div>
   );
 };
