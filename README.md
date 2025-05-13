@@ -1,9 +1,9 @@
-# Crowd Control: Tourism Density Mapper
+# AIDY: Tourism Density Mapper & Travel Companion
 
-Crowd Control is an innovative platform designed to help travelers, city planners, and tourism operators make smarter decisions by visualizing and managing crowd density at popular destinations.
+AIDY is an innovative platform designed to help travelers, city planners, and tourism operators make smarter decisions by visualizing and managing crowd density at popular destinations.
 
-## What is Crowd Control?
-Crowd Control leverages artificial intelligence to provide real-time and predictive insights into how crowded tourist spots are, helping users plan better trips and enjoy safer, more enjoyable experiences. The platform combines live crowd data, AI-powered chat guidance, and easy-to-use tools for both pre-trip planning and on-the-go decision making.
+## What is AIDY?
+AIDY leverages artificial intelligence to provide real-time and predictive insights into how crowded tourist spots are, helping users plan better trips and enjoy safer, more enjoyable experiences. The platform combines live crowd data, AI-powered chat guidance, and easy-to-use tools for both pre-trip planning and on-the-go decision making.
 
 ## Who is it for?
 - **Tourists & Travelers:** Plan your visits to attractions during less crowded times, get live updates, and receive personalized travel tips.
